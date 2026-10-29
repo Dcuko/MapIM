@@ -3,125 +3,57 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style4.css">
-    <link rel="shortcut icon" type="imagex/png" href="img/logosemnome.ico">
-    <title>Mapa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1f3d84">
+    <title>Mapa — MapIM</title>
+    <link rel="icon" type="image/x-icon" href="img/logosemnome.ico">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/map.css">
 </head>
 
-<body>
-    <div class="header">
-        <h1 id="caminho"></h1>
+<body class="map-page">
+    <header class="topbar">
+        <a class="icon-btn" href="index.html" aria-label="Voltar para a busca">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </a>
+        <nav class="floor-tabs" aria-label="Andares">
+            <button type="button" class="floor-tab" data-andar="1">1º</button>
+            <button type="button" class="floor-tab" data-andar="2">2º</button>
+            <button type="button" class="floor-tab" data-andar="3">3º</button>
+            <button type="button" class="floor-tab" data-andar="4">Pós</button>
+        </nav>
+        <a class="brand" href="index.html" aria-label="MapIM">
+            <img src="img/logosemnome.png" alt="" width="40" height="40">
+        </a>
+    </header>
+
+    <main class="viewport" id="viewport">
+        <div class="stage" id="stage"></div>
+        <p class="status" id="status" role="status">Carregando mapa…</p>
+    </main>
+
+    <div class="zoom-controls" role="group" aria-label="Zoom">
+        <button type="button" class="icon-btn" id="zoom-in" aria-label="Aproximar">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="zoom-out" aria-label="Afastar">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="zoom-reset" aria-label="Ajustar à tela">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        </button>
     </div>
-    <div class="mapdiv" id="container">
-        <div id="draggable">
-            <div id="svg-container"></div>
-        </div>
-    </div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
+    <section class="sheet" id="sheet" aria-live="polite" hidden>
+        <button type="button" class="sheet-close" id="sheet-close" aria-label="Fechar">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <p class="sheet-meta" id="sheet-meta"></p>
+        <h1 class="sheet-title" id="sheet-title"></h1>
+        <p class="sheet-text" id="sheet-text"></p>
+    </section>
 
-        const sala = urlParams.get('sala') ?? '101-A';
-        const andar = urlParams.get('andar') ?? 1;
-        const bloco = urlParams.get('bloco') ?? 'Administração';
-
-        fetch('img/' + andar + '-andar.svg')
-            .then(response => response.text())
-            .then(data => {
-                const parser = new DOMParser();
-                const svgContainer = document.getElementById('svg-container');
-                const svg = parser.parseFromString(data, "image/svg+xml").querySelector('svg');
-                svgContainer.appendChild(svg);
-
-                const salaElement = document.getElementById(sala);
-
-                if (!salaElement) {
-                    alert('Não existe');
-                    return;
-                }
-
-                salaElement.style.fill = '#52a447';
-            });
-
-        const h1Element = document.getElementById('caminho');
-        if(andar == 1){
-            h1Element.textContent = `Fique no 1º andar e vá para o bloco ${bloco}, onde você irá achar a sala ${sala} no local destacado abaixo`;
-        }
-        if(andar == 2 || andar == 3){
-            h1Element.textContent = `Vá para o ${andar}º andar, depois para o bloco ${bloco}, onde você irá achar a sala ${sala} no local destacado abaixo`;
-        }
-        if(andar == 4){
-            h1Element.textContent = `Vá para o prédio da pós e você irá achar a sala ${sala} no local destacado abaixo`;
-        }
-        if (sala.includes("SALA")){
-            h1Element.textContent = `Vá para o ${andar}º andar no bloco ${bloco}, onde você irá achar a ${sala} no local destacado abaixo`;
-        }        
-       
-
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const draggable = document.getElementById('draggable');
-            let isDragging = false;
-            let startX, startY, initialMouseX, initialMouseY;
-            let scale = 1;
-
-            draggable.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                startX = draggable.offsetLeft;
-                startY = draggable.offsetTop;
-                initialMouseX = e.clientX;
-                initialMouseY = e.clientY;
-                draggable.style.cursor = 'grabbing';
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    const dx = e.clientX - initialMouseX;
-                    const dy = e.clientY - initialMouseY;
-                    draggable.style.left = `${startX + dx}px`;
-                    draggable.style.top = `${startY + dy}px`;
-                }
-            });
-
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-                draggable.style.cursor = 'grab';
-            });
-
-            document.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                const zoomIntensity = 0.005;
-                scale += e.deltaY * -zoomIntensity;
-                scale = Math.min(Math.max(0.5, scale), 10);
-                draggable.style.transform = `scale(${scale})`;
-            });
-
-            const imagens = document.querySelectorAll('.andar img');
-            imagens.forEach(img => {
-                img.addEventListener('dragstart', (event) => {
-                    event.preventDefault();
-                });
-            });
-
-            const containerImagens = document.getElementById('draggable');
-            containerImagens.addEventListener('dragover', (event) => {
-                event.preventDefault();
-            });
-        });
-    </script>
-    <script>
-          document.addEventListener('DOMContentLoaded', () => {
-           
-            const novoConteudo = "Novo Conteúdo";
-            
-            // Substituir o conteúdo da div
-            const divElement = document.getElementById('conteudo');
-            divElement.textContent = novoConteudo;
-        });
-    </script>
+    <script type="module" src="js/map.js"></script>
 </body>
 
 </html>
